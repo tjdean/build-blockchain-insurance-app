@@ -245,3 +245,37 @@ func (c *claim) Contract(stub shim.ChaincodeStubInterface) (*contract, error) {
 	}
 	return nil, nil
 }
+
+func (c *claim) ContractByUsername(stub shim.ChaincodeStubInterface, username string) (*contract, error) {
+	if len(c.ContractUUID) == 0 {
+		return nil, nil
+	}
+
+	resultsIterator, err := stub.GetStateByPartialCompositeKey(prefixContract, []string{username})
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	for resultsIterator.HasNext() {
+		kvResult, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		_, keyParams, err := stub.SplitCompositeKey(kvResult.Key)
+		if len(keyParams) != 2 {
+			continue
+		}
+
+		if keyParams[1] == c.ContractUUID {
+			contract := &contract{}
+			err := json.Unmarshal(kvResult.Value, contract)
+			if err != nil {
+				return nil, err
+			}
+			return contract, nil
+		}
+	}
+	return nil, nil
+}

@@ -292,6 +292,7 @@ func fileClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		Date         time.Time `json:"date"`
 		Description  string    `json:"description"`
 		IsTheft      bool      `json:"is_theft"`
+		Username     string    `json:"username"`
 	}{}
 	err := json.Unmarshal([]byte(args[0]), &dto)
 	if err != nil {
@@ -307,7 +308,7 @@ func fileClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	}
 
 	// Check if the contract exists
-	contract, err := claim.Contract(stub)
+	contract, err := claim.ContractByUsername(stub, dto.Username)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -361,6 +362,7 @@ func processClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		ContractUUID string      `json:"contract_uuid"`
 		Status       ClaimStatus `json:"status"`
 		Reimbursable float32     `json:"reimbursable"`
+		Username     string      `json:"username"`
 	}{}
 	err := json.Unmarshal([]byte(args[0]), &input)
 	if err != nil {
@@ -400,7 +402,7 @@ func processClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		}
 		claim.Reimbursable = 0
 
-		contract, err := claim.Contract(stub)
+		contract, err := claim.ContractByUsername(stub, input.Username)
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -429,7 +431,7 @@ func processClaim(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 		claim.Reimbursable = input.Reimbursable
 		// If theft was involved, mark the contract as void
 		if claim.IsTheft {
-			contract, err := claim.Contract(stub)
+			contract, err := claim.ContractByUsername(stub, input.Username)
 			if err != nil {
 				return shim.Error(err.Error())
 			}
