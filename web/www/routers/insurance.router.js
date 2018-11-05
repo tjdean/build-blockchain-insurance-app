@@ -155,7 +155,8 @@ router.post('/api/file-claim', async (req, res) => {
         contractUuid,
         date: new Date(),
         description: claim.description,
-        isTheft: claim.isTheft
+        isTheft: claim.isTheft,
+        username: username
       });
       res.json({ success: true });
       return;

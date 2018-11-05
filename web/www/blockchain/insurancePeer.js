@@ -113,7 +113,13 @@ export async function processClaim(contractUuid, uuid, status, reimbursable) {
     return;
   }
   try {
-    const successResult = await invoke('claim_process', { contractUuid, uuid, status, reimbursable });
+    const contracts = await getContracts(undefined);
+    for (let contract in contracts) {
+      if (contract['uuid'] == contractUuid) {
+        var username = contract['username'];
+      }
+    }
+    const successResult = await invoke('claim_process', { contractUuid, uuid, status, reimbursable, username });
     if (successResult) {
       throw new Error(successResult);
     }
